@@ -1,12 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
+import './style/index.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import reportWebVitals from './reportWebVitals';
+import SnakeApp from './SnakeApp';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <SnakeApp />
   </React.StrictMode>,
   document.getElementById('root')
 );

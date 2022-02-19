@@ -1,7 +1,7 @@
 import { Movement, Options } from '../../utils/Constants';
 
 const MovementService = {
-  isValidDirection: function(currentDirection, newDirection){
+  isValidDirection: (currentDirection, newDirection) => {
     switch(currentDirection){
       case Movement.UP:
         return newDirection != Movement.UP && newDirection != Movement.DOWN;
@@ -13,7 +13,7 @@ const MovementService = {
         return newDirection != Movement.RIGHT && newDirection != Movement.LEFT;
     }
   },
-  move: function(direction, segments){
+  move: (direction, segments) => {
     const prevHead = segments[0];
     const bodyAndTail = [...segments.slice(0, segments.length - 1)];
     let newHead = {};

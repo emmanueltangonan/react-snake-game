@@ -5,8 +5,21 @@ export const Options = {
 };
 
 export const Movement = Object.freeze({
-    UP:   Symbol('up'),
-    DOWN:  Symbol('down'),
+    UP: Symbol('up'),
+    DOWN: Symbol('down'),
     LEFT: Symbol('left'),
     RIGHT: Symbol('right')
 });
+
+export const GameState = Object.freeze({
+    NEW: Symbol('new'),
+    ACTIVE: Symbol('active'),
+    PAUSED: Symbol('paused'),
+    GAME_OVER: Symbol('game_over')
+});
+
+export const ButtonText = {
+    START: 'Start',
+    PAUSE: 'Pause',
+    CONTINUE: 'Continue'
+};

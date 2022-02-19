@@ -5,7 +5,7 @@ import Snake from '../components/Snake';
 
 const SnakeContainer = ({players}) => {
   const snakes = players.map(player => 
-    <Snake key={player.id} segments={player.snakeSegments} girth={Options.snakeGirth} />);
+    <Snake key={player.id} player={player} />);
 
   return (
     <SnakeGrid height={Options.gridHeight} width={Options.gridWidth}>

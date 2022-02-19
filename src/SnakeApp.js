@@ -1,46 +1,74 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 
-import { Movement } from './utils/Constants';
+import Defaults from './utils/Defaults';
 import Button from './components/Button';
 import SnakeContainer from './containers/SnakeContainer';
 import Panel from './containers/Panel';
 import MovementService from './services/MovementService';
-import useChangeDirection from './hooks/useChangeDirection';
+import useKeyPress from './hooks/useKeyPress';
+import useInterval from './hooks/useInterval';
+import { GameState } from './utils/Constants';
+import useGameState from './hooks/useGameState';
 
 // the end goal is to make this multiplayer,
 // for now we'll stick with single player
-const player =
-  {id: 1, direction: Movement.RIGHT, snakeSegments: [{top: 0, left: 20}, {top: 0, left: 10}, {top: 0, left: 0}]};
+const player = Defaults.player1;
   
 function SnakeApp() {
+  const [gameState, gameStateDesc, buttonText, setGameState] = useGameState(GameState.NEW);
   const [playerState, setPlayerState] = useState(player);
 
-  useEffect(() => {
-    let gameTickInterval = setInterval(() => {
-      setPlayerState(prev => {
+  useInterval(() => {
+    if (gameState != GameState.ACTIVE){
+      return;
+    }
+
+    setPlayerState(prev => {
         const newPosition = MovementService.move(prev.direction, prev.snakeSegments);
         return { ...prev, snakeSegments: newPosition };
       });
-    }, 100);
-    
-    return () => clearInterval(gameTickInterval);
-  }, []);
+  }, 100);
 
-  useChangeDirection(newDirection => {
-    console.log(newDirection)
+  useKeyPress(changeDirection, changeStateHandler);
+
+  function changeDirection(newDirection) {
+    if (gameState != GameState.ACTIVE){
+      return;
+    }
+
     setPlayerState(prev => { 
       return MovementService.isValidDirection(prev.direction, newDirection)
         ? { ...prev, direction: newDirection }
         : prev;
-    });
-  });
+      });
+  }
+
+  function changeStateHandler() {
+    switch(gameState){
+      case GameState.NEW:
+        setGameState(GameState.ACTIVE);
+        break;
+      case GameState.ACTIVE:
+        setGameState(GameState.PAUSED);
+        break;
+      case GameState.PAUSED:
+        setGameState(GameState.ACTIVE);
+        break;
+      case GameState.GAME_OVER:
+        setGameState(GameState.ACTIVE);
+        break;
+    }
+  }
 
   return (
     <Wrapper>
+      <Panel>
+        <h1>{gameStateDesc}</h1>
+      </Panel>
       <SnakeContainer players={[playerState]} />
       <Panel>
-        <Button>Pause</Button>
+        <Button onClick={changeStateHandler}>{buttonText}</Button>
       </Panel>
     </Wrapper>
   );

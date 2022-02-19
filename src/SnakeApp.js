@@ -1,28 +1,46 @@
-import styled from "styled-components"
+import { useEffect, useState } from 'react';
+import styled from 'styled-components';
 
-import './style/SnakeApp.css';
+import { Movement } from './utils/Constants';
+import Button from './components/Button';
 import SnakeContainer from './containers/SnakeContainer';
 import Panel from './containers/Panel';
+import MovementService from './services/MovementService';
+import useChangeDirection from './hooks/useChangeDirection';
 
 // the end goal is to make this multiplayer,
 // for now we'll stick with single player
-let players = [
-  {id: 1, snakeSegments: [{top: 0, left: 0}]}
-];
-
-let props = {
-  gridHeight: 300, //px
-  gridWidth: 400, //px
-  snakeGirth: 10, //px,
-  players
-}
-
+const player =
+  {id: 1, direction: Movement.RIGHT, snakeSegments: [{top: 0, left: 20}, {top: 0, left: 10}, {top: 0, left: 0}]};
+  
 function SnakeApp() {
+  const [playerState, setPlayerState] = useState(player);
+
+  useEffect(() => {
+    let gameTickInterval = setInterval(() => {
+      setPlayerState(prev => {
+        const newPosition = MovementService.move(prev.direction, prev.snakeSegments);
+        return { ...prev, snakeSegments: newPosition };
+      });
+    }, 100);
+    
+    return () => clearInterval(gameTickInterval);
+  }, []);
+
+  useChangeDirection(newDirection => {
+    console.log(newDirection)
+    setPlayerState(prev => { 
+      return MovementService.isValidDirection(prev.direction, newDirection)
+        ? { ...prev, direction: newDirection }
+        : prev;
+    });
+  });
+
   return (
     <Wrapper>
-      <SnakeContainer {...props } />
+      <SnakeContainer players={[playerState]} />
       <Panel>
-        <button className='button-primary'>Pause</button>
+        <Button>Pause</Button>
       </Panel>
     </Wrapper>
   );

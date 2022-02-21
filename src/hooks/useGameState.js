@@ -17,10 +17,10 @@ const useGameState = (initState) => {
       break;
     case GameState.GAME_OVER:
       gameStateDesc = 'Game Over';
-      buttonText = ButtonText.START;
+      buttonText = ButtonText.NEW_GAME;
       break;
     case GameState.ACTIVE:
-      gameStateDesc = 'Active';
+      gameStateDesc = '';
       buttonText = ButtonText.PAUSE;
   }
 

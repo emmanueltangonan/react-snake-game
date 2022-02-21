@@ -1,5 +1,6 @@
 import styled from 'styled-components';
-import GridElement from './GridElement'
+import GridElement from './GridElement';
+import { Options } from "../utils/Constants";
 
 const Snake = ({ player }) => {
   const { snakeSegments } = player;
@@ -19,8 +20,8 @@ const Snake = ({ player }) => {
 
 const Segment = styled(GridElement)`
   background-color: ${prop => prop.color};
-  height: 10px;
-  width: 10px;
+  height: ${Options.snakeGirth}px;
+  width: ${Options.snakeGirth}px;
   border-radius: 2px;
 `
 

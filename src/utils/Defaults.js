@@ -1,6 +1,4 @@
-import { Movement, Options } from "./Constants";
-
-const snakeGirth = Options.snakeGirth;
+import { Movement } from "./Constants";
 
 const Defaults = {
   player1: {
@@ -8,16 +6,16 @@ const Defaults = {
     color: 'blue',
     direction: Movement.RIGHT, 
     snakeSegments: [{
-        top: snakeGirth, 
-        left: snakeGirth * 4
+        top: 1, 
+        left: 4
     }, 
     {
-        top: snakeGirth, 
-        left: snakeGirth * 3
+        top: 1, 
+        left: 3
     }, 
     {
-        top: snakeGirth, 
-        left: snakeGirth * 2
+        top: 1, 
+        left: 2
     }]
   }
 };

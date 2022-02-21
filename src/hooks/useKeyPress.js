@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Movement } from "../utils/Constants";
+import useThrottle from "./useThrottle";
 
 const useKeyPress = (
   setDirection,
@@ -18,7 +19,6 @@ const useKeyPress = (
   }, [setGameState])
 
   const keyDownHandler = ({ key }) => {
-    console.log(key);
     switch(key){
       case 'w':
         setDirectionCallback.current(Movement.UP);

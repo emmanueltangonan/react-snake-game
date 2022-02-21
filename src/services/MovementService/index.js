@@ -17,20 +17,19 @@ const MovementService = {
     const prevHead = segments[0];
     const bodyAndTail = [...segments.slice(0, segments.length - 1)];
     let newHead = {};
-    const snakeGirth = Options.snakeGirth;
 
     switch(direction){
       case Movement.UP:
-        newHead = {top: prevHead.top - snakeGirth, left: prevHead.left};
+        newHead = {top: prevHead.top - 1, left: prevHead.left};
         break;
       case Movement.DOWN:
-        newHead = {top: prevHead.top + snakeGirth, left: prevHead.left};
+        newHead = {top: prevHead.top + 1, left: prevHead.left};
         break;
       case Movement.LEFT:
-        newHead = {top: prevHead.top, left: prevHead.left - snakeGirth};
+        newHead = {top: prevHead.top, left: prevHead.left - 1};
         break;
       case Movement.RIGHT:
-        newHead = {top: prevHead.top, left: prevHead.left + snakeGirth};
+        newHead = {top: prevHead.top, left: prevHead.left + 1};
         break;
     }
 

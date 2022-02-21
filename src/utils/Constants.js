@@ -1,6 +1,6 @@
 export const Options = {
-    gridHeight: 300, //px
-    gridWidth: 400, //px
+    gridHeight: 30, //px
+    gridWidth: 40, //px
     snakeGirth: 10, //px,
 };
 
@@ -21,5 +21,6 @@ export const GameState = Object.freeze({
 export const ButtonText = {
     START: 'Start',
     PAUSE: 'Pause',
-    CONTINUE: 'Continue'
+    CONTINUE: 'Continue',
+    NEW_GAME: 'New Game'
 };

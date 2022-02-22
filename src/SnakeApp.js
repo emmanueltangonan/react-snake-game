@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import Defaults from './utils/Defaults';
@@ -23,15 +23,29 @@ function SnakeApp() {
   const [playerState, setPlayerState] = useState(player);
   const [foodList, setFoodList] = useState([]);
   const [score, setScore] = useState(0);
-  const tickSpeed = 50;
+  const gridCellsRef = useRef(PlayingFieldService.getGridCells());
+  const changingDirectionRef = useRef(false);
+  const tickSpeed = 500;
+
+  //console.log(gridCellsRef.current);
+
+  // initialize
+  useEffect(() => {
+    let addedFood = FoodService.addFood(setFoodList, gridCellsRef.current);
+    PlayingFieldService.updateGridCells(
+      gridCellsRef.current,
+      [...playerState.snakeSegments, addedFood]);
+  }, []);
 
   useInterval(() => {
     if (gameState != GameState.ACTIVE){
       return;
     }
     
+    changingDirectionRef.current = false;
+
     const newPosition = MovementService.move(
-        playerState.direction, playerState.snakeSegments);
+      playerState.direction, playerState.snakeSegments);
 
     let newHead = newPosition[0];
     if (PlayingFieldService.snakeHitWall(newHead.top, newHead.left)){
@@ -42,13 +56,22 @@ function SnakeApp() {
     let foodEaten = checkFoodEaten(foodList, newHead);
     if (foodEaten){
       setScore(prev => prev += foodEaten.points);
+      PlayingFieldService.updateGridCells(
+        gridCellsRef.current,
+        [newHead]
+      );
       growSnake(setPlayerState, newHead);
       // remove and add new food
       setFoodList(prev => {
         return prev.filter(f => f.top != newHead.top && f.left != newHead.left);
       });
-    //   FoodService.addFood(setFoodList);
-    } else { 
+      FoodService.addFood(setFoodList, gridCellsRef.current);
+    } else {
+      PlayingFieldService.updateGridCells(
+        gridCellsRef.current,
+        [newHead],
+        [playerState.snakeSegments[playerState.snakeSegments.length - 1]]
+      );
       setPlayerState(prev => {
         return { ...prev, snakeSegments: newPosition };
       });
@@ -56,18 +79,15 @@ function SnakeApp() {
 
   }, tickSpeed);
 
-  // initialize food
-  useEffect(() => {
-    FoodService.addFood(setFoodList);
-  }, []);
-
-  const throttledChangeDirection = useThrottle(changeDirection, tickSpeed);
-  useKeyPress(throttledChangeDirection, changeStateHandler);
+  useKeyPress(changeDirection, changeStateHandler);
 
   function changeDirection(newDirection) {
-    if (gameState != GameState.ACTIVE){
+    if (gameState != GameState.ACTIVE
+        || changingDirectionRef.current){
       return;
     }
+
+    changingDirectionRef.current = true;
 
     setPlayerState(prev => { 
       return MovementService.isValidDirection(playerState.direction, newDirection)
@@ -80,7 +100,6 @@ function SnakeApp() {
     switch(gameState){
       case GameState.NEW:
         setGameState(GameState.ACTIVE);
-        FoodService.addFood(setFoodList);
         break;
       case GameState.ACTIVE:
         setGameState(GameState.PAUSED);
@@ -89,9 +108,7 @@ function SnakeApp() {
         setGameState(GameState.ACTIVE);
         break;
       case GameState.GAME_OVER:
-        setGameState(GameState.NEW);
-        setPlayerState(Defaults.player1);
-        setScore(0);
+        window.location.reload();
         break;
     }
   }

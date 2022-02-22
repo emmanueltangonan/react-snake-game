@@ -25,9 +25,9 @@ const SnakeGrid = styled.div`
   justify-content: center;
   align-items: center;
   background-color: white;
-  border: 1px solid lightgrey;
-  height: ${props => props.height * Options.snakeGirth}px;
-  width: ${props => props.width * Options.snakeGirth}px;
+  border: 2px solid black;
+  height: ${props => props.height * Options.snakeGirth + 4}px;
+  width: ${props => props.width * Options.snakeGirth + 4}px;
 `
 
 const GameState = styled.h1`

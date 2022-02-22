@@ -1,7 +1,7 @@
 export const Options = {
-    gridHeight: 30, //px
-    gridWidth: 40, //px
-    snakeGirth: 10, //px,
+    gridHeight: 5, 
+    gridWidth: 6, 
+    snakeGirth: 10, 
 };
 
 export const Movement = Object.freeze({

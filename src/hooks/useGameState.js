@@ -4,8 +4,8 @@ import { ButtonText, GameState } from "../utils/Constants";
 const useGameState = (initState) => {
   const [gameState, setGameState] = useState(initState);
 
-  let gameStateDesc = undefined;
-  let buttonText = undefined;
+  let gameStateDesc;
+  let buttonText;
   switch(gameState) {
     case GameState.NEW:
       gameStateDesc = 'New Game';

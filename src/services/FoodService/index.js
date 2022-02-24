@@ -2,12 +2,15 @@ import Random from "../../utils/Random";
 import PlayingFieldService from "../PlayingFieldService";
 
 const FoodService = {
-  addFood: (setFoodList, gridCells) => {
-    let basicFood = { points: 1 };
-    let position = PlayingFieldService.getRandomEmptyCell(gridCells);
-    setFoodList(prev => [...prev, {...basicFood, ...position}]);
-    console.log(position)
-    return position;
+  generateFood: (setFoodList, gridCells, count = 1) => {
+    const basicFood = { points: 1 };
+    const cellsArray = PlayingFieldService.getRandomEmptyCell(gridCells, count);
+    const newFood = cellsArray.map(cell => {
+      return {...basicFood, ...cell}
+    });
+    
+    setFoodList(prev => [...prev, ...newFood]);
+    return newFood;
   }
 };
 

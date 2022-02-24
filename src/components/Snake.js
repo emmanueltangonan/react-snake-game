@@ -12,7 +12,12 @@ const Snake = ({ player }) => {
           key={i} 
           top={segment.top} 
           left={segment.left} 
-          color={player.color} />
+          color={player.color} >
+            { i == 0
+              ? <HeadMarker />
+              : null
+            }
+        </Segment>
       ))}
     </>
   );
@@ -23,6 +28,12 @@ const Segment = styled(GridElement)`
   height: ${Options.snakeGirth}px;
   width: ${Options.snakeGirth}px;
   border-radius: 2px;
+  padding: 3px;
+`
+const HeadMarker = styled.div`
+  background-color: white;
+  height: 4px;
+  width: 4px;
 `
 
 export default Snake;

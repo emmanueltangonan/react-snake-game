@@ -16,7 +16,7 @@ const MovementService = {
   move: (direction, segments) => {
     const prevHead = segments[0];
     const bodyAndTail = [...segments.slice(0, segments.length - 1)];
-    let newHead = {};
+    let newHead;
 
     switch(direction){
       case Movement.UP:

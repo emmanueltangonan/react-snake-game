@@ -1,7 +1,10 @@
 export const Options = {
-    gridHeight: 5, 
-    gridWidth: 6, 
-    snakeGirth: 10, 
+    gridHeight: 20, 
+    gridWidth: 30, 
+    snakeGirth: 10,
+    tickIntervalLimit: 1, // ms
+    speedIncrease: 10, // ms
+    numberOfFood: 2
 };
 
 export const Movement = Object.freeze({

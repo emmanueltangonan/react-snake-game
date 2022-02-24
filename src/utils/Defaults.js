@@ -6,6 +6,7 @@ const Defaults = {
     color: 'blue',
     direction: Movement.RIGHT, 
     snakeSegments: [{
+        head: true,
         top: 1, 
         left: 4
     }, 

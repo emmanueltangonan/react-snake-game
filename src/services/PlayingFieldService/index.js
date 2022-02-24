@@ -8,19 +8,25 @@ const PlayingFieldService = {
       || left < 0
       || left >= Options.gridWidth;
   },
-  getRandomEmptyCell: (gridCells) => {
-    let emptyCells = gridCells.filter(cell => cell.empty);
-    let randomIndex = Random.getRandomInt(emptyCells.length);
-    return emptyCells[randomIndex];
+  getRandomEmptyCell: (gridCells, numCells) => {
+    const emptyCells = gridCells.filter(cell => cell.empty);
+    const randomIndexes = Random.getRandomInts(emptyCells.length, numCells);
+    
+    const cells = [];
+    randomIndexes.forEach(index => {
+        cells.push(emptyCells[index]);
+    });
+
+    return cells;
   },
   updateGridCells: (gridCells, occupied = [], emptied = []) => {
     occupied.forEach(pos => {
-      let index = pos.top * Options.gridWidth + pos.left;
+        const index = pos.top * Options.gridWidth + pos.left;
       gridCells[index].empty = false;
     });
 
     emptied.forEach(pos => {
-      let index = pos.top * Options.gridWidth + pos.left;
+        const index = pos.top * Options.gridWidth + pos.left;
       gridCells[index].empty = true;
     });
   },

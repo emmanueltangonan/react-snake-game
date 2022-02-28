@@ -1,4 +1,4 @@
-import { Movement, Options } from '../../utils/Constants';
+import { Movement } from '../../utils/Constants';
 
 const MovementService = {
   isValidDirection: (currentDirection, newDirection) => {
@@ -13,9 +13,8 @@ const MovementService = {
         return newDirection != Movement.RIGHT && newDirection != Movement.LEFT;
     }
   },
-  move: (direction, segments) => {
+  getNewHead: (direction, segments) => {
     const prevHead = segments[0];
-    const bodyAndTail = [...segments.slice(0, segments.length - 1)];
     let newHead;
 
     switch(direction){
@@ -33,7 +32,7 @@ const MovementService = {
         break;
     }
 
-    return [newHead, ...bodyAndTail];
+    return newHead;
   }
 };
 

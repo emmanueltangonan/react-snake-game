@@ -8,9 +8,13 @@ const FoodService = {
     const newFood = cellsArray.map(cell => {
       return {...basicFood, ...cell}
     });
-    
+
     setFoodList(prev => [...prev, ...newFood]);
-    return newFood;
+
+    PlayingFieldService.updateGridCells(
+      gridCells,
+      newFood
+    );
   }
 };
 

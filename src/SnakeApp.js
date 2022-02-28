@@ -1,127 +1,210 @@
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
-import Defaults from './utils/Defaults';
+import { Players, getPositions } from './utils/Defaults';
 import Button from './components/Button';
 import SnakeContainer from './containers/SnakeContainer';
 import Panel from './containers/Panel';
 import MovementService from './services/MovementService';
 import useKeyPress from './hooks/useKeyPress';
 import useInterval from './hooks/useInterval';
-import { GameState, Options } from './utils/Constants';
+import { ButtonText, GameMode, GameState, Options } from './utils/Constants';
 import useGameState from './hooks/useGameState';
 import PlayingFieldService from './services/PlayingFieldService';
 import FoodService from './services/FoodService';
-
-// the end goal is to make this 2-player, hence the design
-// for now we'll stick with single player
-const player = Defaults.player1;
+import Select from './components/Select';
+import Heading from './components/Heading';
   
 function SnakeApp() {
+  const [gameMode, setGameMode] = useState(GameMode.SINGLE_PLAYER);
   const [gameState, gameStateDesc, buttonText, setGameState] = useGameState(GameState.NEW);
-  const [playerState, setPlayerState] = useState(player);
+  const [allPlayers, setAllPlayers] = useState([Players[0]]);
   const [foodList, setFoodList] = useState([]);
-  const [score, setScore] = useState(0);
+  const [winner, setWinner] = useState(null);
   const gridCellsRef = useRef(PlayingFieldService.getGridCells());
-  const changingDirectionRef = useRef(false);
-  const tickInterval = useRef(100);
+  const directionChangedRef = useRef({});
+  const tickIntervalRef = useRef(100);
 
-  // initialize
+  useKeyPress(allPlayers, changeDirection, changeStateHandler);
+
   useEffect(() => {
-    
-    const addedFood = FoodService.generateFood(setFoodList, gridCellsRef.current, Options.numberOfFood);
-    PlayingFieldService.updateGridCells(
-      gridCellsRef.current,
-      [...playerState.snakeSegments, ...addedFood]);
-  }, []);
+    initialize()
+  }, [gameMode]);
 
   useInterval(() => {
     if (gameState != GameState.ACTIVE){
       return;
     }
-    
-    changingDirectionRef.current = false;
 
-    const newPosition = MovementService.move(
-      playerState.direction, playerState.snakeSegments);
+    allPlayers.forEach(player => {
+      directionChangedRef.current[player.id] = false;
 
-    const newHead = newPosition[0];
-    if (PlayingFieldService.snakeHitWall(newHead.top, newHead.left)){
+      const newHead = MovementService.getNewHead(
+        player.direction, 
+        player.snakeSegments);
+
+      if (PlayingFieldService.snakeHitWall(newHead.top, newHead.left)
+          || PlayingFieldService.snakeHitObstacle(gridCellsRef.current, newHead.top, newHead.left)){
+        player.isAlive = false;
+        return;
+      }
+
+      const foodEaten = checkFoodEaten(foodList, newHead);
+      if (foodEaten){
+        increaseSnakeSpeed(tickIntervalRef);
+        growTail(player.id, newHead);
+        removeFood(newHead);
+        FoodService.generateFood(setFoodList, gridCellsRef.current);
+      } else {
+        move(player.id, newHead);
+      }
+    });
+
+    if(allPlayers.some(p => !p.isAlive)){
       setGameState(GameState.GAME_OVER);
-      return;
+      if (gameMode === GameMode.DEATHMATCH)
+        setWinner(allPlayers.find(p => p.isAlive) || 'Draw');
     }
+    
+  }, tickIntervalRef.current);
 
-    const foodEaten = checkFoodEaten(foodList, newHead);
-    if (foodEaten){
-      // increase snake speed
-      tickInterval.current = getNextTickInterval(tickInterval.current);
-      console.log(tickInterval.current)
-      setScore(prev => prev += foodEaten.points);
+  function initialize() {
+    setGameState(GameState.NEW);
+    gridCellsRef.current = PlayingFieldService.getGridCells();
+    setFoodList([]);
+    setDefaultPlayersAndFood();
+    initializePositions(setAllPlayers, gridCellsRef.current, directionChangedRef.current);
+    setWinner(null);  
+}
+
+  function setDefaultPlayersAndFood(){
+    switch(gameMode){
+      case GameMode.SINGLE_PLAYER:
+        setAllPlayers([Players[0]]);
+        FoodService.generateFood(setFoodList, gridCellsRef.current, 1);
+        break;
+      case GameMode.DEATHMATCH:
+        setAllPlayers(Players);
+        FoodService.generateFood(setFoodList, gridCellsRef.current, 2);
+        break;
+    }
+  }
+
+  function move(playerId, newHead){
+    setAllPlayers(prev => {
+      const newPlayersState = [...prev];
+      const playerIndex =  newPlayersState.findIndex(p => p.id == playerId);
+      const playerCopy = {...newPlayersState[playerIndex]};
+      const { snakeSegments } = playerCopy;
+
+      const lastIndex = snakeSegments.length - 1;
+
       PlayingFieldService.updateGridCells(
         gridCellsRef.current,
-        [newHead]
-      );
-      growSnake(setPlayerState, newHead);
-      // remove and add new food
-      setFoodList(prev => {
-        return prev.filter(f => !(f.top == newHead.top && f.left == newHead.left));
-      });
-      FoodService.generateFood(setFoodList, gridCellsRef.current);
-    } else {
-      PlayingFieldService.updateGridCells(
-        gridCellsRef.current,
+        [],
         [newHead],
-        [playerState.snakeSegments[playerState.snakeSegments.length - 1]]
-      );
-      setPlayerState(prev => {
-        return { ...prev, snakeSegments: newPosition };
-      });
-    }
+        [snakeSegments[lastIndex]]);
 
-  }, tickInterval.current);
+      playerCopy.snakeSegments = [newHead, ...snakeSegments.slice(0, lastIndex)];
+      newPlayersState[playerIndex] = playerCopy;
+      return newPlayersState;
+    });    
+  }
 
-  useKeyPress(changeDirection, changeStateHandler);
+  function growTail(playerId, newHead){
+    PlayingFieldService.updateGridCells(
+      gridCellsRef.current,
+      [],
+      [newHead]
+    );
 
-  function changeDirection(newDirection) {
+    setAllPlayers(prev => {
+      const newPlayersState = [...prev];
+      const playerIndex = newPlayersState.findIndex(p => p.id == playerId);
+      const playerCopy = {...newPlayersState[playerIndex]};
+      const { snakeSegments } = playerCopy;
+
+      playerCopy.snakeSegments = [newHead, ...snakeSegments];
+      playerCopy.score++;
+      newPlayersState[playerIndex] = playerCopy;
+
+      return newPlayersState;
+    });
+  }
+
+  function changeDirection(playerId, newDirection) {
     if (gameState != GameState.ACTIVE
-        || changingDirectionRef.current){
+        // to prevent issuing multiple directions per game tick
+        || directionChangedRef.current[playerId]){
       return;
     }
 
-    changingDirectionRef.current = true;
+    setAllPlayers(prev => { 
+      const newPlayersState = [...prev];
+      const playerIndex = newPlayersState.findIndex(p => p.id == playerId);
+      const playerCopy = {...newPlayersState[playerIndex]};
 
-    setPlayerState(prev => { 
-      return MovementService.isValidDirection(playerState.direction, newDirection)
-        ? { ...prev, direction: newDirection }
-        : prev;
+      if (MovementService.isValidDirection(playerCopy.direction, newDirection)){
+        directionChangedRef.current[playerId] = true;
+        playerCopy.direction = newDirection;
+        newPlayersState[playerIndex] = playerCopy;
+        return newPlayersState;
+      }
+
+      return prev;
+    });
+  }
+
+  function removeFood(newHead){
+    setFoodList(prev => {
+      return prev.filter(f => !(f.top == newHead.top && f.left == newHead.left));
     });
   }
 
   function changeStateHandler() {
-    switch(gameState){
-      case GameState.NEW:
+    switch(buttonText){
+      case ButtonText.START:
         setGameState(GameState.ACTIVE);
         break;
-      case GameState.ACTIVE:
+      case ButtonText.PAUSE:
         setGameState(GameState.PAUSED);
         break;
-      case GameState.PAUSED:
+      case ButtonText.CONTINUE:
         setGameState(GameState.ACTIVE);
         break;
-      case GameState.GAME_OVER:
-        window.location.reload();
+      case ButtonText.NEW_GAME:
+        initialize();
         break;
     }
+  }
+
+  const gameModes = Object.values(GameMode);
+
+  let gameResult;
+  if (gameMode == GameMode.SINGLE_PLAYER){
+    gameResult = null;
+  } else if (winner) {
+    gameResult = winner === 'Draw'
+    ? <Heading>It's a Draw!</Heading>
+    : <Heading color={winner.color}>{winner.name} Wins!</Heading>;
   }
 
   return (
     <Wrapper>
       <Panel>
-        <h4>Score: {score}</h4>
+        <Select options={gameModes} onChange={setGameMode}/>
       </Panel>
+      {gameMode === GameMode.SINGLE_PLAYER 
+        ? <Panel>
+            <h5>Score: {allPlayers[0].score}</h5>
+          </Panel>
+        : <Panel>
+            <pre>Player 1: wsad / Player 2: arrow keys</pre>
+          </Panel>}
       <SnakeContainer 
-        players={[playerState]} 
-        gameState={gameStateDesc} 
+        players={allPlayers} 
+        gameState={gameStateDesc}
+        gameResult={gameResult} 
         foodList={foodList} />
       <Panel>
         <Button onClick={changeStateHandler}>{buttonText}</Button>
@@ -130,18 +213,41 @@ function SnakeApp() {
   );
 }
 
+function increaseSnakeSpeed(tickIntervalRef){
+  tickIntervalRef.current = getNextTickInterval(tickIntervalRef.current);
+}
+
+function initializePositions(setAllPlayers, gridCellsRef, directionChangedTracker){
+  const {gridHeight, gridWidth} = Options;
+  const defaultPositions = getPositions(gridHeight, gridWidth);
+
+  setAllPlayers(prev => {
+    const newState = [...prev];
+    for (let i = 0; i < newState.length; i++) {
+      const player = {...newState[i]};
+      const defaultPosition = defaultPositions[i];
+      player.snakeSegments = defaultPosition;
+
+      PlayingFieldService.updateGridCells(
+        gridCellsRef,
+        [],
+        defaultPosition);
+
+      directionChangedTracker[player.id] = false;
+
+      newState[i] = player;
+    }
+
+    return newState;
+  });
+}
+
 function checkFoodEaten(foodList, head){
   return foodList.find(f => f.top === head.top && f.left === head.left);
 }
 
-function growSnake(setPlayerState, newHead){
-  setPlayerState(prev => {
-    return {...prev, snakeSegments: [newHead, ...prev.snakeSegments]}
-  });
-}
-
 function getNextTickInterval(currentInterval){
-  const next = Math.round(currentInterval / 1.05);
+  const next = Math.round(currentInterval / 1.01);
   return next <= Options.tickIntervalLimit 
     ? Options.tickIntervalLimit 
     : next;

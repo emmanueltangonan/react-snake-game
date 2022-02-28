@@ -3,8 +3,9 @@ import styled from 'styled-components';
 import { Options } from '../utils/Constants';
 import Snake from '../components/Snake';
 import { BasicFood } from '../components/Food';
+import Heading from '../components/Heading';
 
-const SnakeContainer = ({players, gameState, foodList}) => {
+const SnakeContainer = ({ players, gameState, foodList, gameResult }) => {
   const snakes = players.map(player => 
     <Snake key={player.id} player={player} />);
   const food = foodList.map((f, i) => 
@@ -12,7 +13,11 @@ const SnakeContainer = ({players, gameState, foodList}) => {
 
   return (
     <SnakeGrid height={Options.gridHeight} width={Options.gridWidth}>
-      <GameState>{gameState}</GameState>
+      <GameState>
+        <Heading>{gameState}</Heading>
+        {gameResult}
+      </GameState>
+      
       {snakes}
       {gameState === '' && food}
     </SnakeGrid> 
@@ -21,6 +26,7 @@ const SnakeContainer = ({players, gameState, foodList}) => {
 
 const SnakeGrid = styled.div`
   position: relative;
+  margin: auto;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -30,7 +36,10 @@ const SnakeGrid = styled.div`
   width: ${props => props.width * Options.snakeGirth + 4}px;
 `
 
-const GameState = styled.h1`
+const GameState = styled.div`
+  justify-content: center;
+  display: inline;
+  align-items: center;
 `
 
 export default SnakeContainer;

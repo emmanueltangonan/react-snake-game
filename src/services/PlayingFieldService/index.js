@@ -8,6 +8,10 @@ const PlayingFieldService = {
       || left < 0
       || left >= Options.gridWidth;
   },
+  snakeHitObstacle: (gridCells, top, left) => {
+    const cell = gridCells.find(cell => cell.top == top && cell.left == left);
+    return cell.fatal;
+  },
   getRandomEmptyCell: (gridCells, numCells) => {
     const emptyCells = gridCells.filter(cell => cell.empty);
     const randomIndexes = Random.getRandomInts(emptyCells.length, numCells);
@@ -19,15 +23,23 @@ const PlayingFieldService = {
 
     return cells;
   },
-  updateGridCells: (gridCells, occupied = [], emptied = []) => {
-    occupied.forEach(pos => {
-        const index = pos.top * Options.gridWidth + pos.left;
+  updateGridCells: (gridCells, occupiedSafe = [], occupiedFatal = [], emptied = []) => {
+    occupiedSafe.forEach(pos => {
+      const index = pos.top * Options.gridWidth + pos.left;
       gridCells[index].empty = false;
+      gridCells[index].fatal = false;
+    });
+
+    occupiedFatal.forEach(pos => {
+      const index = pos.top * Options.gridWidth + pos.left;
+      gridCells[index].empty = false;
+      gridCells[index].fatal = true;
     });
 
     emptied.forEach(pos => {
-        const index = pos.top * Options.gridWidth + pos.left;
+      const index = pos.top * Options.gridWidth + pos.left;
       gridCells[index].empty = true;
+      gridCells[index].fatal = null;
     });
   },
   getGridCells: () => {
@@ -36,7 +48,7 @@ const PlayingFieldService = {
     let cells = [];
     for (let i = 0; i < gridHeight; i++){
       for (let j = 0; j < gridWidth; j++){
-        cells.push({ top: i, left: j, empty: true });
+        cells.push({ top: i, left: j, empty: true, fatal: null });
       }
     }
 

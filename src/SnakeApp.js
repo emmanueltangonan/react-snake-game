@@ -23,7 +23,7 @@ function SnakeApp() {
   const [winner, setWinner] = useState(null);
   const gridCellsRef = useRef(PlayingFieldService.getGridCells());
   const directionChangedRef = useRef({});
-  const tickIntervalRef = useRef(100);
+  const tickIntervalRef = useRef(Options.tickIntervalStart);
 
   useKeyPress(allPlayers, changeDirection, changeStateHandler);
 
@@ -71,11 +71,12 @@ function SnakeApp() {
   function initialize() {
     setGameState(GameState.NEW);
     gridCellsRef.current = PlayingFieldService.getGridCells();
+    tickIntervalRef.current = Options.tickIntervalStart;
     setFoodList([]);
     setDefaultPlayersAndFood();
     initializePositions(setAllPlayers, gridCellsRef.current, directionChangedRef.current);
     setWinner(null);  
-}
+  }
 
   function setDefaultPlayersAndFood(){
     switch(gameMode){
@@ -247,7 +248,7 @@ function checkFoodEaten(foodList, head){
 }
 
 function getNextTickInterval(currentInterval){
-  const next = Math.round(currentInterval / 1.01);
+  const next = Math.round(currentInterval / 1.05);
   return next <= Options.tickIntervalLimit 
     ? Options.tickIntervalLimit 
     : next;

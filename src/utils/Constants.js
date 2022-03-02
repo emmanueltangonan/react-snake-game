@@ -3,7 +3,7 @@ export const Options = {
   gridWidth: 50, 
   snakeGirth: 10,
   tickIntervalLimit: 1, // ms
-  speedIncrease: 10, // ms
+  tickIntervalStart: 100, // ms
   numberOfFood: 2
 };
 
